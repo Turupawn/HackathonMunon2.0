@@ -1,12 +1,14 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { HackathonMunonContext } from "./../hardhat/SymfoniContext";
 import { Input, Button, Heading, Box, Text, Card, Link } from 'rimble-ui';
+import { BigNumber } from 'ethers';
 
 interface Props { }
 
 export const HackathonMunon: React.FC<Props> = () => {
     const hackathon_munon = useContext(HackathonMunonContext)
     const [hackathonName, setHackathonName] = useState("");
+    const [hackathonEntryFee, setHackathonEntryFee] = useState("");
     const [hackathons, setHackathons] = useState([] as any);
     useEffect(() => {
         const doAsync = async () => {
@@ -33,7 +35,9 @@ export const HackathonMunon: React.FC<Props> = () => {
         e.preventDefault()
         if (!hackathon_munon.instance) throw Error("HackathonMunon instance not ready")
         if (hackathon_munon.instance) {
-            const tx = await hackathon_munon.instance.createHackathon("", hackathonName)
+            let entry_fee_wei = String(parseFloat(hackathonEntryFee)*1000000000000000000)
+            console.log(entry_fee_wei)
+            const tx = await hackathon_munon.instance.createHackathon(hackathonName, "", BigNumber.from(entry_fee_wei))
             await tx.wait()
         }
     }
@@ -52,7 +56,8 @@ export const HackathonMunon: React.FC<Props> = () => {
             })}
             </ul>
             <Heading mb={4} as={"h2"}>Create a new Hackathon</Heading>
-            <Input onChange={(e) => setHackathonName(e.target.value)} type="text" required={true} placeholder="e.g. My hodl wallet"></Input>
+            <Input onChange={(e) => setHackathonName(e.target.value)} type="text" required={true} placeholder="e.g. My hackathon"></Input>
+            <Input onChange={(e) => setHackathonEntryFee(e.target.value)} type="text" required={true} placeholder="e.g. 0.3"></Input>
             <Button onClick={(e) => handleCreateHackathon(e)}>Create Hackathon</Button>
         </div>
     )

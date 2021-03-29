@@ -32,7 +32,7 @@ function AppRouter() {
 return (
   <Router>
     <BaseStyles>
-      <Box m={4}>
+      <Box maxWidth={'640px'} mx={'auto'} p={3}>
         <div>
           <nav>
             <ul>

@@ -11,8 +11,9 @@ contract HackathonMunon
   (
     address hackaton_host,
     uint256 hackathon_id,
-    string image_hash,
     string name,
+    string image_hash,
+    uint256 entry_fee,
     uint256 creation_time
   );
 
@@ -59,8 +60,9 @@ contract HackathonMunon
   {
     address host_addr;
     HackathonState state;
-    string image_hash;
     string name;
+    string image_hash;
+    uint256 entry_fee;
     uint256 pot;
     uint256 creation_time;
     uint256 enable_review_time;
@@ -87,9 +89,9 @@ contract HackathonMunon
   uint256 entry_fee = 0.03 ether; // Hackathon entry fee
 
   // Modifiers
-  modifier paysEntryFee()
+  modifier paysEntryFee(uint256 hackathon_id)
   {
-    require(msg.value == entry_fee, "Amount not equal to pay fee");
+    require(msg.value == hackathons[hackathon_id].entry_fee, "Amount not equal to pay fee");
     _;
   }
 
@@ -166,22 +168,22 @@ contract HackathonMunon
   }
 
   // Public methods
-  function createHackathon(string memory image_hash, string memory _name) public
+  function createHackathon(string memory _name, string memory image_hash, uint256 _entry_fee) public
   {
     hackathon_count += 1;
     uint256 date_now = block.timestamp;
-    hackathons[hackathon_count] = Hackathon(msg.sender, HackathonState.RegistrationOpen, image_hash, _name, 0, date_now, date_now);
-    emit HackathonCreation(msg.sender, hackathon_count, image_hash,_name, date_now);
+    hackathons[hackathon_count] = Hackathon(msg.sender, HackathonState.RegistrationOpen, _name, image_hash, _entry_fee, 0, date_now, date_now);
+    emit HackathonCreation(msg.sender, hackathon_count, _name, image_hash, _entry_fee, date_now);
   }
 
   function join(
     uint256 hackathon_id
-  ) public payable paysEntryFee hasNotJoined(hackathon_id) isRegistrationOpen(hackathon_id)
+  ) public payable paysEntryFee(hackathon_id) hasNotJoined(hackathon_id) isRegistrationOpen(hackathon_id)
   {
     Participant memory participant = Participant(msg.sender, 0);
     hackathon_participants[hackathon_id][msg.sender] = participant;
     hackathon_participant_addresses[hackathon_id].push(msg.sender);
-    hackathons[hackathon_id].pot = hackathons[hackathon_id].pot.add(entry_fee);
+    hackathons[hackathon_id].pot = hackathons[hackathon_id].pot.add(hackathons[hackathon_id].entry_fee);
     emit Registration(hackathon_id, msg.sender);
   }
 

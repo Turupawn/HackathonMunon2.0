@@ -13,6 +13,7 @@ export const Hackathon: React.FC<Props> = () => {
     const [currentAddress, setCurrentAddress] = useContext(CurrentAddressContext)
     const [current_user_is_participant, setCurrentUserIsParticipant] = useState(false);
     const [name, setName] = useState("");
+    const [entry_fee, setEntryFee] = useState(0);
     const [host_address, setHostAddress] = useState("");
     const [state, setState] = useState(0);
     const [pot, setPot] = useState(0);
@@ -24,6 +25,7 @@ export const Hackathon: React.FC<Props> = () => {
             if (!hackathon_munon.instance) return
             const hackathon = await hackathon_munon.instance.hackathons(id)
             setName(hackathon.name)
+            setEntryFee(parseInt(hackathon.entry_fee._hex))
             setHostAddress(hackathon.host_addr)
             setState(hackathon.state)
             setPot(parseInt(hackathon.pot._hex))
@@ -58,18 +60,9 @@ export const Hackathon: React.FC<Props> = () => {
         e.preventDefault()
         if (!hackathon_munon.instance) throw Error("HackathonMunon instance not ready")
         if (hackathon_munon.instance) {
-            const tx = await hackathon_munon.instance.join(id, { value: BigNumber.from("30000000000000000") })
+            console.log(entry_fee)
+            const tx = await hackathon_munon.instance.join(id, { value: BigNumber.from(String(entry_fee)) })
             await tx.wait()
-        }
-    }
-    
-    const handleRateParticipant = async (address, e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-        e.preventDefault()
-        if (!hackathon_munon.instance) throw Error("HackathonMunon instance not ready")
-        if (hackathon_munon.instance) {
-            //const tx = await hackathon_munon.instance.createHackathon("", hackathonName)
-            //await tx.wait()
-            console.log(address)
         }
     }
 
@@ -140,6 +133,7 @@ export const Hackathon: React.FC<Props> = () => {
                 <p>This event has finished</p>
             }
             <p>Pot: {pot}</p>
+            <p>Entry fee: {entry_fee}</p>
             {canJoin() &&
                 <Button onClick={(e) => handleJoinHackathon(e)}>Join Hackathon</Button>
             }
