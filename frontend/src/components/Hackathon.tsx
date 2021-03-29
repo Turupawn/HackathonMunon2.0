@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { HackathonMunonContext, CurrentAddressContext } from "./../hardhat/SymfoniContext";
 import { useParams } from 'react-router-dom';
 import { BigNumber } from 'ethers';
-import { Button, Heading, Form, Radio, Box, Field } from 'rimble-ui';
+import { Button, Heading, Form, Radio, Box, Field, Image } from 'rimble-ui';
 
 interface Props { }
 
@@ -13,6 +13,7 @@ export const Hackathon: React.FC<Props> = () => {
     const [currentAddress, setCurrentAddress] = useContext(CurrentAddressContext)
     const [current_user_is_participant, setCurrentUserIsParticipant] = useState(false);
     const [name, setName] = useState("");
+    const [image_hash, setImageHash] = useState("");
     const [entry_fee, setEntryFee] = useState(0);
     const [host_address, setHostAddress] = useState("");
     const [state, setState] = useState(0);
@@ -25,6 +26,7 @@ export const Hackathon: React.FC<Props> = () => {
             if (!hackathon_munon.instance) return
             const hackathon = await hackathon_munon.instance.hackathons(id)
             setName(hackathon.name)
+            setImageHash(hackathon.image_hash)
             setEntryFee(parseInt(hackathon.entry_fee._hex))
             setHostAddress(hackathon.host_addr)
             setState(hackathon.state)
@@ -60,7 +62,6 @@ export const Hackathon: React.FC<Props> = () => {
         e.preventDefault()
         if (!hackathon_munon.instance) throw Error("HackathonMunon instance not ready")
         if (hackathon_munon.instance) {
-            console.log(entry_fee)
             const tx = await hackathon_munon.instance.join(id, { value: BigNumber.from(String(entry_fee)) })
             await tx.wait()
         }
@@ -132,6 +133,7 @@ export const Hackathon: React.FC<Props> = () => {
             {isFinished() &&
                 <p>This event has finished</p>
             }
+            <Image width="200" src={"http://ipfs.io/ipfs/" + image_hash}></Image>
             <p>Pot: {pot}</p>
             <p>Entry fee: {entry_fee}</p>
             {canJoin() &&
