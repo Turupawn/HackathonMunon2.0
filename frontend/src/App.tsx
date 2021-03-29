@@ -3,6 +3,7 @@ import { Symfoni } from "./hardhat/SymfoniContext";
 import { HackathonMunon } from './components/HackathonMunon';
 import { Hackathon } from './components/Hackathon';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { Box, Button, Heading, Text, BaseStyles } from "rimble-ui";
 
 function Index() {
   return (
@@ -30,17 +31,21 @@ function HackathonRoute({ match }) {
 function AppRouter() {
 return (
   <Router>
-    <div>
-      <nav>
-        <ul>
-          <li>
-            <Link to="/">Home</Link>
-          </li>
-        </ul>
-      </nav>
-      <Route path="/" exact component={Index} />
-      <Route path="/hackathons/:id" component={HackathonRoute} />
-    </div>
+    <BaseStyles>
+      <Box m={4}>
+        <div>
+          <nav>
+            <ul>
+              <li>
+                <Link to="/">Home</Link>
+              </li>
+            </ul>
+          </nav>
+          <Route path="/" exact component={Index} />
+          <Route path="/hackathons/:id" component={HackathonRoute} />
+        </div>
+      </Box>
+    </BaseStyles>
   </Router>
 );
 }
