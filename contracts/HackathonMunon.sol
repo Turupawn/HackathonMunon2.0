@@ -235,6 +235,7 @@ contract HackathonMunon
     emit HackathonFinished(hackathon_id);
   }
 
+  // Force methods
   function forceFinishHackathon(uint256 hackathon_id) public isRegistrationOpen(hackathon_id) twoMonthFromCreation(hackathon_id)
   {
     hackathons[hackathon_id].state = HackathonState.Finished;
@@ -247,6 +248,7 @@ contract HackathonMunon
     emit HackathonFinished(hackathon_id);
   }
 
+  // View methods
   function getParticipantCount(uint256 hackathon_id) public view returns(uint participant_count) {
     return hackathon_participant_addresses[hackathon_id].length;
   }

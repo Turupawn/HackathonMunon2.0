@@ -1,12 +1,16 @@
 import React, { useContext, useEffect, useState } from 'react';
-import { HackathonMunonContext } from "./../hardhat/SymfoniContext";
+import { HackathonMunonContext, CurrentAddressContext } from "./../hardhat/SymfoniContext";
 import { useParams } from 'react-router-dom';
 import { BigNumber } from 'ethers';
 
 interface Props { }
 
+enum HackathonState { RegistrationOpen, ReviewEnabled, Finished }
+
 export const Hackathon: React.FC<Props> = () => {
     const hackathon_munon = useContext(HackathonMunonContext)
+    const [currentAddress, setCurrentAddress] = useContext(CurrentAddressContext)
+    const [current_user_is_participant, setCurrentUserIsParticipant] = useState(false);
     const [name, setName] = useState("");
     const [host_address, setHostAddress] = useState("");
     const [state, setState] = useState(0);
@@ -34,6 +38,12 @@ export const Hackathon: React.FC<Props> = () => {
                 })
             }
             setParticipants(participants)
+
+            const current_user_participation = await hackathon_munon.instance.hackathon_participants(id, currentAddress)
+            if (parseInt(current_user_participation.addr) != 0)
+                setCurrentUserIsParticipant(true)
+            else
+                setCurrentUserIsParticipant(false)
         };
         doAsync();
     }, [hackathon_munon])
@@ -66,13 +76,81 @@ export const Hackathon: React.FC<Props> = () => {
         }
     }
 
+    const handleEnableReview = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.preventDefault()
+        if (!hackathon_munon.instance) throw Error("HackathonMunon instance not ready")
+        if (hackathon_munon.instance) {
+            const tx = await hackathon_munon.instance.enableHackathonReview(id)
+            await tx.wait()
+        }
+    }
+
+    const handleFinish = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.preventDefault()
+        if (!hackathon_munon.instance) throw Error("HackathonMunon instance not ready")
+        if (hackathon_munon.instance) {
+            const tx = await hackathon_munon.instance.finishHackathon(id)
+            await tx.wait()
+        }
+    }
+
+    function currentUserIsHost()
+    {
+        return host_address == currentAddress;
+    }
+
+    function isRegistrationOpen()
+    {
+        return state == HackathonState.RegistrationOpen;
+    }
+
+    function isReviewEnabled()
+    {
+        return state == HackathonState.ReviewEnabled;
+    }
+
+    function isFinished()
+    {
+        return state == HackathonState.Finished;
+    }
+
+    function canJoin()
+    {
+        return isRegistrationOpen() && !current_user_is_participant;
+    }
+
+    function canEnableReview()
+    {
+        return isRegistrationOpen() && currentUserIsHost();
+    }
+
+    function canFinish()
+    {
+        return isReviewEnabled() && currentUserIsHost();
+    }
+
+    function canCashout()
+    {
+        return isFinished() && current_user_is_participant;
+    }
+
     return (
         <div>
             <p>{name}</p>
             <p>State: {state}</p>
             <p>Pot: {pot}</p>
-            <button onClick={(e) => handleJoinHackathon(e)}>Join Hackathon</button>
-            <button onClick={(e) => handleCashout(e)}>Cashout</button>
+            {canJoin() &&
+                <button onClick={(e) => handleJoinHackathon(e)}>Join Hackathon</button>
+            }
+            {canEnableReview() &&
+                <button onClick={(e) => handleEnableReview(e)}>Enable Review</button>
+            }
+            {canFinish() &&
+                <button onClick={(e) => handleFinish(e)}>Finish</button>
+            }
+            {canCashout() &&
+                <button onClick={(e) => handleCashout(e)}>Cashout</button>
+            }
             <ul>
             {participants.map(function(participant) {
                 return  <li key={ participant.addr }>

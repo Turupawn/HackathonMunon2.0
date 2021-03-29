@@ -15,7 +15,7 @@ function Index() {
     </div>
   );
 }
-function Product({ match }) {
+function HackathonRoute({ match }) {
   return (
     <div className="App">
       <header className="App-header">
@@ -38,9 +38,8 @@ return (
           </li>
         </ul>
       </nav>
-
       <Route path="/" exact component={Index} />
-      <Route path="/hackathons/:id" component={Product} />
+      <Route path="/hackathons/:id" component={HackathonRoute} />
     </div>
   </Router>
 );
